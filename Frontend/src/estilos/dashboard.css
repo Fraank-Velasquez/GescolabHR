@@ -1,0 +1,45 @@
+/* Alturas porcentuales para las barras del gráfico del dashboard */
+.barra-0 { height: 0%; }
+.barra-5 { height: 5%; }
+.barra-10 { height: 10%; }
+.barra-15 { height: 15%; }
+.barra-20 { height: 20%; }
+.barra-25 { height: 25%; }
+.barra-30 { height: 30%; }
+.barra-35 { height: 35%; }
+.barra-40 { height: 40%; }
+.barra-45 { height: 45%; }
+.barra-50 { height: 50%; }
+.barra-55 { height: 55%; }
+.barra-60 { height: 60%; }
+.barra-65 { height: 65%; }
+.barra-70 { height: 70%; }
+.barra-75 { height: 75%; }
+.barra-80 { height: 80%; }
+.barra-85 { height: 85%; }
+.barra-90 { height: 90%; }
+.barra-95 { height: 95%; }
+.barra-100 { height: 100%; }
+
+/* Anchos porcentuales para las barras de distribución por departamento */
+.ancho-0 { width: 0%; }
+.ancho-5 { width: 5%; }
+.ancho-10 { width: 10%; }
+.ancho-15 { width: 15%; }
+.ancho-20 { width: 20%; }
+.ancho-25 { width: 25%; }
+.ancho-30 { width: 30%; }
+.ancho-35 { width: 35%; }
+.ancho-40 { width: 40%; }
+.ancho-45 { width: 45%; }
+.ancho-50 { width: 50%; }
+.ancho-55 { width: 55%; }
+.ancho-60 { width: 60%; }
+.ancho-65 { width: 65%; }
+.ancho-70 { width: 70%; }
+.ancho-75 { width: 75%; }
+.ancho-80 { width: 80%; }
+.ancho-85 { width: 85%; }
+.ancho-90 { width: 90%; }
+.ancho-95 { width: 95%; }
+.ancho-100 { width: 100%; }

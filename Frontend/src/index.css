@@ -1,0 +1,43 @@
+@import 'tailwindcss';
+
+/* Tokens de color corporativos definidos en el design system */
+@theme {
+  --color-sidebar: #13403d;
+  --color-primario: #148d82;
+  --color-primario-hover: #157069;
+  --color-suave: #f1fcf9;
+  --color-suave-2: #cff8ef;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+/* Cifras tabulares para relojes, horas y montos */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+/* Animación suave para el punto pulsante de estado */
+@keyframes parpadeo {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.parpadeo {
+  animation: parpadeo 1.6s ease-in-out infinite;
+}
+
+/* Reloj en vivo de la tarjeta de marcación */
+@keyframes entrada-reloj {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.reloj-vivo {
+  animation: entrada-reloj 0.4s ease-out;
+}
