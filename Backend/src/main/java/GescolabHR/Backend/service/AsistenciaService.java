@@ -254,8 +254,9 @@ public class AsistenciaService {
 	@Transactional
 	public AsistenciaResponseDTO justificar(Long id, JustificacionAsistenciaDTO peticion) {
 		Asistencia asistencia = buscarAsistencia(id);
-		if (asistencia.getEstado() != EstadoAsistencia.TARDANZA) {
-			throw new ReglaNegocioException("Solo se pueden justificar marcaciones con estado de tardanza");
+		if (asistencia.getEstado() != EstadoAsistencia.TARDANZA
+				&& asistencia.getEstado() != EstadoAsistencia.AUSENTE) {
+			throw new ReglaNegocioException("Solo se pueden justificar tardanzas o faltas");
 		}
 		asistencia.setMotivoJustificacion(peticion.getMotivo());
 		asistencia.setEstado(EstadoAsistencia.JUSTIFICADA);
@@ -282,20 +283,6 @@ public class AsistenciaService {
 	@Transactional
 	public AsistenciaResponseDTO auditar(Long id) {
 		Asistencia asistencia = buscarAsistencia(id);
-		asistencia.setAuditada(true);
-		return convertir(asistenciaRepository.save(asistencia));
-	}
-
-	@Transactional
-	public AsistenciaResponseDTO registrarFalta(Long id) {
-		Asistencia asistencia = buscarAsistencia(id);
-		if (asistencia.getEstado() != EstadoAsistencia.AUSENTE
-				&& asistencia.getHoraEntrada() != null) {
-			throw new ReglaNegocioException("Solo se puede registrar falta cuando no existe una marcación de entrada");
-		}
-		asistencia.setEstado(EstadoAsistencia.AUSENTE);
-		asistencia.setHoraEntrada(null);
-		asistencia.setHoraSalida(null);
 		asistencia.setAuditada(true);
 		return convertir(asistenciaRepository.save(asistencia));
 	}

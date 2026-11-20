@@ -16,7 +16,6 @@ import {
   obtenerJornadaActual,
   obtenerMiResumen,
   justificarMiAsistencia,
-  registrarRefrigerio,
 } from '../../servicios/asistenciaServicio'
 
 const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto',
@@ -40,6 +39,7 @@ export default function MiAsistencia() {
   const [modalReglamento, setModalReglamento] = useState(false)
   const [modalProblemas, setModalProblemas] = useState(false)
   const [confirmacionJustificacion, setConfirmacionJustificacion] = useState(null)
+  const [confirmacionMarcacion, setConfirmacionMarcacion] = useState(null)
   const [motivoJustificacion, setMotivoJustificacion] = useState('')
 
   // Reloj en vivo de la tarjeta hero
@@ -72,28 +72,33 @@ export default function MiAsistencia() {
     try {
       if (tipo === 'entrada') await marcarEntrada()
       if (tipo === 'salida') await marcarSalida()
-      if (tipo === 'refrigerio') await registrarRefrigerio()
       setMensaje(
         tipo === 'entrada'
           ? 'Entrada registrada correctamente'
-          : tipo === 'salida'
-            ? 'Salida registrada correctamente'
-            : 'Refrigerio registrado',
+          : 'Salida registrada correctamente',
       )
       mostrarToast(
         tipo === 'entrada'
           ? 'Entrada registrada correctamente'
-          : tipo === 'salida'
-            ? 'Salida registrada correctamente'
-            : 'Refrigerio registrado',
+          : 'Salida registrada correctamente',
       )
       await cargar()
+      await cargarMarcaciones()
+      setConfirmacionMarcacion(null)
     } catch (error) {
       setErrorAccion(error.response?.data?.mensaje || 'No se pudo completar la marcación')
       mostrarToast(error.response?.data?.mensaje || 'No se pudo completar la marcación', 'error')
     } finally {
       setCargandoAccion(false)
     }
+  }
+
+  function solicitarMarcacion(tipo) {
+    setConfirmacionMarcacion(tipo)
+  }
+
+  async function confirmarMarcacion() {
+    await manejarAccion(confirmacionMarcacion)
   }
 
   function solicitarJustificacion(marcacion) {
@@ -139,19 +144,20 @@ export default function MiAsistencia() {
   const mesSeleccionado = filtroMes ? Number(filtroMes) : mesActual
 
   const [marcaciones, setMarcaciones] = useState([])
-  useEffect(() => {
-    async function cargarMarcaciones() {
-      try {
-        const datos = await listarMisMarcaciones({
-          anio: anioActual,
-          mes: mesSeleccionado,
-          estado: filtroEstado || undefined,
-        })
-        setMarcaciones(datos)
-      } catch (error) {
-        console.error('Error al cargar marcaciones', error)
-      }
+  async function cargarMarcaciones() {
+    try {
+      const datos = await listarMisMarcaciones({
+        anio: anioActual,
+        mes: mesSeleccionado,
+        estado: filtroEstado || undefined,
+      })
+      setMarcaciones(datos)
+    } catch (error) {
+      console.error('Error al cargar marcaciones', error)
     }
+  }
+
+  useEffect(() => {
     cargarMarcaciones()
   }, [mesSeleccionado, filtroEstado, anioActual])
 
@@ -231,6 +237,17 @@ export default function MiAsistencia() {
                 alCambiarObservacion={setMotivoJustificacion}
               />
             )}
+            {confirmacionMarcacion && (
+              <ModalConfirmacion
+                abierto
+                titulo={`Confirmar ${confirmacionMarcacion === 'entrada' ? 'registro de entrada' : 'registro de salida'}`}
+                mensaje={`¿Desea confirmar el ${confirmacionMarcacion === 'entrada' ? 'registro de su entrada' : 'registro de su salida'}?`}
+                textoConfirmar="Confirmar marcación"
+                cargando={cargandoAccion}
+                alCancelar={() => setConfirmacionMarcacion(null)}
+                alConfirmar={confirmarMarcacion}
+              />
+            )}
             <div className="flex flex-wrap gap-3">
               <button
                 type="button"
@@ -257,11 +274,10 @@ export default function MiAsistencia() {
 
           {(mensaje || errorAccion) && (
             <div
-              className={`rounded-lg border px-4 py-3 text-sm ${
-                mensaje
-                  ? 'border-[#148D82]/20 bg-[#CFF8EF] text-[#157069]'
-                  : 'border-red-200 bg-red-50 text-red-600'
-              }`}
+              className={`rounded-lg border px-4 py-3 text-sm ${mensaje
+                ? 'border-[#148D82]/20 bg-[#CFF8EF] text-[#157069]'
+                : 'border-red-200 bg-red-50 text-red-600'
+                }`}
             >
               {mensaje || errorAccion}
             </div>
@@ -364,7 +380,7 @@ export default function MiAsistencia() {
               <div className="mt-4 space-y-2.5">
                 <button
                   type="button"
-                  onClick={() => manejarAccion('salida')}
+                  onClick={() => solicitarMarcacion('salida')}
                   disabled={!puedeMarcarSalida || cargandoAccion}
                   className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#148D82] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1DAF9F] disabled:cursor-not-allowed disabled:opacity-50"
                 >
@@ -378,21 +394,12 @@ export default function MiAsistencia() {
                 <div className="grid grid-cols-2 gap-2.5">
                   <button
                     type="button"
-                    onClick={() => manejarAccion('entrada')}
+                    onClick={() => solicitarMarcacion('entrada')}
                     disabled={!puedeMarcarEntrada || cargandoAccion}
-                    className="flex items-center justify-center gap-1.5 rounded-lg border border-[#13403D] bg-[#0D3331] px-3 py-2.5 text-xs font-medium text-white transition-colors hover:bg-[#13403D] disabled:cursor-not-allowed disabled:opacity-40"
+                    className="flex w-full items-center justify-center  gap-1.5 rounded-lg border border-[#13403D] bg-[#0D3331] px-3 py-2.5 text-xs font-medium text-white transition-colors hover:bg-[#13403D] disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <Icon icon="material-symbols:login" className="text-sm" />
                     Registrar Entrada
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => manejarAccion('refrigerio')}
-                    disabled={!puedeMarcarSalida || cargandoAccion}
-                    className="flex items-center justify-center gap-1.5 rounded-lg border border-[#13403D] bg-[#0D3331] px-3 py-2.5 text-xs font-medium text-white transition-colors hover:bg-[#13403D] disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    <Icon icon="material-symbols:coffee" className="text-sm" />
-                    Refrigerio / Pausa
                   </button>
                 </div>
 
@@ -463,9 +470,8 @@ export default function MiAsistencia() {
                   {visibles.map((m) => (
                     <tr
                       key={m.id}
-                      className={`border-b border-slate-100 transition-colors ${
-                        m.estado === 'TARDANZA' ? 'bg-red-50/40' : 'hover:bg-[#F8FAFC]'
-                      }`}
+                      className={`border-b border-slate-100 transition-colors ${m.estado === 'TARDANZA' ? 'bg-red-50/40' : 'hover:bg-[#F8FAFC]'
+                        }`}
                     >
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-2">
@@ -477,9 +483,8 @@ export default function MiAsistencia() {
                           )}
                         </div>
                       </td>
-                      <td className={`px-5 py-3.5 text-right font-medium tabular-nums ${
-                        m.estado === 'TARDANZA' ? 'text-red-600' : 'text-slate-900'
-                      }`}>
+                      <td className={`px-5 py-3.5 text-right font-medium tabular-nums ${m.estado === 'TARDANZA' ? 'text-red-600' : 'text-slate-900'
+                        }`}>
                         {m.horaEntrada ? formatearHora(m.horaEntrada) : '--:--'}
                       </td>
                       <td className="px-5 py-3.5 text-right tabular-nums text-slate-700">

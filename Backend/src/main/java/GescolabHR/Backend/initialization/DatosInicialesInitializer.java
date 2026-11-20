@@ -259,7 +259,7 @@ public class DatosInicialesInitializer implements CommandLineRunner {
 		registrarMarcacion(buscarPorCorreo(empleados, "valeria.ramos@gescolab.corp"), hoy,
 				LocalTime.of(9, 14), null, EstadoAsistencia.TARDANZA, MetodoMarcacion.PORTAL_WEB);
 		registrarMarcacion(buscarPorCorreo(empleados, "andres.silva@gescolab.corp"), hoy,
-				LocalTime.of(8, 45), LocalTime.of(17, 30), EstadoAsistencia.PUNTUAL, MetodoMarcacion.PORTAL_WEB);
+				LocalTime.of(8, 45), null, EstadoAsistencia.PUNTUAL, MetodoMarcacion.PORTAL_WEB);
 		registrarMarcacion(buscarPorCorreo(empleados, "mariana.castillo@gescolab.corp"), hoy,
 				LocalTime.of(9, 0), null, EstadoAsistencia.PUNTUAL, MetodoMarcacion.PORTAL_WEB);
 		registrarMarcacion(buscarPorCorreo(empleados, "lucia.fernandez@gescolab.corp"), hoy,
@@ -276,7 +276,7 @@ public class DatosInicialesInitializer implements CommandLineRunner {
 		LocalDate inicioMes = hoy.withDayOfMonth(1);
 		for (int i = 1; i <= 19; i++) {
 			LocalDate dia = inicioMes.plusDays(i - 1);
-			if (dia.isAfter(hoy) || dia.getDayOfWeek().getValue() > 5) {
+			if (!dia.isBefore(hoy) || dia.getDayOfWeek().getValue() > 5) {
 				continue;
 			}
 			if (asistenciaRepository.existsByEmpleadoIdAndFecha(

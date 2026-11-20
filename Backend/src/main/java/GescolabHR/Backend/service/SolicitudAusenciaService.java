@@ -82,6 +82,10 @@ public class SolicitudAusenciaService {
 			throw new ReglaNegocioException("La fecha fin debe ser mayor o igual a la fecha inicio");
 		}
 
+		if (peticion.getFechaInicio().isBefore(LocalDate.now())) {
+			throw new ReglaNegocioException("La fecha de inicio no puede ser anterior a la fecha actual");
+		}
+
 		TipoSolicitud tipo = TipoSolicitud.valueOf(peticion.getTipo());
 		int dias = (int) (ChronoUnit.DAYS.between(peticion.getFechaInicio(), peticion.getFechaFin()) + 1);
 		if (dias <= 0) {

@@ -20,7 +20,7 @@ public class Departamento {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(nullable = false, unique = true, length = 20)
+	@Column(nullable = false, unique = true, length = 7)
 	private String codigo;
 
 	@Column(nullable = false, length = 100)

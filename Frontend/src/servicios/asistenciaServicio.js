@@ -58,11 +58,6 @@ export async function auditarAsistencia(id) {
   return respuesta.data
 }
 
-export async function registrarFalta(id) {
-  const respuesta = await api.put(`/asistencia/${id}/falta`)
-  return respuesta.data
-}
-
 export async function registrarMarcacionManual(datos) {
   const respuesta = await api.post('/asistencia/manual', datos)
   return respuesta.data

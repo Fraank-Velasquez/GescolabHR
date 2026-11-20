@@ -71,8 +71,8 @@ export default function IniciarSesion() {
             Gestión integral del talento humano, asistencia y operaciones en un solo lugar.
           </h1>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-[#B7D4D1] lg:text-base">
-            Optimiza la sincronización biométrica, supervisión de dotación por departamento, control de
-            licencias y flujos de trabajo corporativos con la más alta seguridad y precisión.
+            Optimiza asistencias, supervisión de  por departamento, control de
+            licencias y flujos de trabajo corporativos con seguridad y precisión.
           </p>
         </div>
 

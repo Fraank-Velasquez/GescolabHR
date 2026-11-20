@@ -89,12 +89,6 @@ public class AsistenciaController {
 		return ResponseEntity.ok(asistenciaService.auditar(id));
 	}
 
-	@PutMapping("/{id}/falta")
-	@PreAuthorize("hasRole('ADMIN_RRHH')")
-	public ResponseEntity<AsistenciaResponseDTO> registrarFalta(@PathVariable Long id) {
-		return ResponseEntity.ok(asistenciaService.registrarFalta(id));
-	}
-
 	// Marcaciones del propio colaborador autenticado
 	@GetMapping("/mias")
 	public ResponseEntity<List<AsistenciaResponseDTO>> listarPropias(

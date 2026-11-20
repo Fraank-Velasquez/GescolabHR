@@ -32,6 +32,14 @@ const TIPOS = [
   { valor: 'CAPACITACION', texto: 'Capacitación', icono: 'school' },
 ]
 
+function obtenerFechaActual() {
+  const fecha = new Date()
+  const ano = fecha.getFullYear()
+  const mes = String(fecha.getMonth() + 1).padStart(2, '0')
+  const dia = String(fecha.getDate()).padStart(2, '0')
+  return `${ano}-${mes}-${dia}`
+}
+
 // Supervisión y aprobación de solicitudes de ausencia del personal
 export default function GestionVacaciones() {
   const { mostrarToast } = useToast()
@@ -135,6 +143,11 @@ export default function GestionVacaciones() {
     evento.preventDefault()
     if (!formNueva.idEmpleado || !formNueva.fechaInicio || !formNueva.fechaFin || formNueva.motivo.trim().length < 5) {
       setErrorAccion('Complete colaborador, periodo y motivo (mínimo 5 caracteres)')
+      return
+    }
+    if (formNueva.fechaInicio < obtenerFechaActual()) {
+      setErrorAccion('La fecha de inicio no puede ser anterior a la fecha actual')
+      mostrarToast('La fecha de inicio no puede ser anterior a la fecha actual', 'error')
       return
     }
     setCargandoAccion(true)
@@ -433,7 +446,7 @@ export default function GestionVacaciones() {
                 />
               </div>
               <div><label htmlFor="tipoSolicitud" className="mb-1.5 block text-sm font-medium">Tipo *</label><select id="tipoSolicitud" value={formNueva.tipo} onChange={(e) => setFormNueva({ ...formNueva, tipo: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm">{TIPOS.map((tipo) => <option key={tipo.valor} value={tipo.valor}>{tipo.texto}</option>)}</select></div>
-              <div className="grid gap-4 sm:grid-cols-2"><div><label htmlFor="inicioSolicitud" className="mb-1.5 block text-sm font-medium">Fecha inicio *</label><input id="inicioSolicitud" type="date" value={formNueva.fechaInicio} onChange={(e) => setFormNueva({ ...formNueva, fechaInicio: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm" /></div><div><label htmlFor="finSolicitud" className="mb-1.5 block text-sm font-medium">Fecha fin *</label><input id="finSolicitud" type="date" value={formNueva.fechaFin} onChange={(e) => setFormNueva({ ...formNueva, fechaFin: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm" /></div></div>
+              <div className="grid gap-4 sm:grid-cols-2"><div><label htmlFor="inicioSolicitud" className="mb-1.5 block text-sm font-medium">Fecha inicio *</label><input id="inicioSolicitud" type="date" min={obtenerFechaActual()} value={formNueva.fechaInicio} onChange={(e) => setFormNueva({ ...formNueva, fechaInicio: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm" /></div><div><label htmlFor="finSolicitud" className="mb-1.5 block text-sm font-medium">Fecha fin *</label><input id="finSolicitud" type="date" value={formNueva.fechaFin} onChange={(e) => setFormNueva({ ...formNueva, fechaFin: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm" /></div></div>
               <div><label htmlFor="motivoSolicitud" className="mb-1.5 block text-sm font-medium">Motivo *</label><textarea id="motivoSolicitud" rows="4" value={formNueva.motivo} onChange={(e) => setFormNueva({ ...formNueva, motivo: e.target.value })} className="w-full resize-none rounded-lg border border-slate-200 px-3 py-2.5 text-sm" /></div>
             </div>
             <div className="mt-6 flex justify-end gap-3"><button type="button" onClick={() => setModalNueva(false)} className="rounded-lg border border-slate-200 px-4 py-2.5 text-sm">Cancelar</button><button type="submit" disabled={cargandoAccion} className="rounded-lg bg-[#148D82] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60">{cargandoAccion ? 'Guardando...' : 'Registrar Solicitud'}</button></div>

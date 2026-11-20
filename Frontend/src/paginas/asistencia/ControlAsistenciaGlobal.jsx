@@ -14,7 +14,6 @@ import {
   listarAsistencias,
   obtenerResumenAsistenciaGlobal,
   registrarMarcacionManual,
-  registrarFalta,
 } from '../../servicios/asistenciaServicio'
 
 // Supervisión global de marcaciones con filtros y acciones de auditoría
@@ -108,20 +107,11 @@ export default function ControlAsistenciaGlobal() {
 
   async function aplicarAccion(id, accion) {
     if (accion === 'justificar') {
-      setModalJustificar(id)
+      const marcacion = marcaciones.content.find((item) => item.id === id)
+      setModalJustificar({ id, estado: marcacion?.estado })
       setMotivo('')
       setErrorJustificacion('')
       return
-    }
-    if (accion === 'falta') {
-      const marcacion = marcaciones.content.find((item) => item.id === id)
-      setConfirmacion({
-        tipo: 'falta',
-        id,
-        titulo: 'Registrar falta',
-        mensaje: `¿Desea registrar la falta de "${marcacion?.nombreColaborador || 'este colaborador'}" para hoy?`,
-        peligroso: true,
-      })
     }
   }
 
@@ -168,7 +158,7 @@ export default function ControlAsistenciaGlobal() {
     setConfirmacion({
       tipo: 'justificacion',
       titulo: 'Confirmar justificación',
-      mensaje: '¿Desea guardar la justificación y cambiar esta tardanza a JUSTIFICADA?',
+      mensaje: `¿Desea guardar la justificación y cambiar esta ${modalJustificar?.estado === 'AUSENTE' ? 'falta' : 'tardanza'} a JUSTIFICADA?`,
       peligroso: false,
     })
   }
@@ -178,9 +168,9 @@ export default function ControlAsistenciaGlobal() {
     setCargandoAccion(true)
     try {
       if (confirmacion.tipo === 'justificacion') {
-        await justificarAsistencia(modalJustificar, motivo.trim())
+        await justificarAsistencia(modalJustificar.id, motivo.trim())
         setModalJustificar(null)
-        mostrarToast('Tardanza justificada correctamente')
+        mostrarToast('Incidencia justificada correctamente')
       } else {
         if (confirmacion.tipo === 'manual') {
           await registrarMarcacionManual({
@@ -191,9 +181,6 @@ export default function ControlAsistenciaGlobal() {
           })
           setModalManual(false)
           mostrarToast('Marcación manual registrada correctamente')
-        } else {
-        await registrarFalta(confirmacion.id)
-        mostrarToast('Falta registrada correctamente')
         }
       }
       setConfirmacion(null)
@@ -204,7 +191,7 @@ export default function ControlAsistenciaGlobal() {
           ? 'No se pudo justificar la marcación'
           : confirmacion.tipo === 'manual'
             ? 'No se pudo registrar la marcación manual'
-            : 'No se pudo registrar la falta')
+            : 'No se pudo registrar la marcación')
       setConfirmacion(null)
       if (confirmacion.tipo === 'justificacion') setErrorJustificacion(mensaje)
       mostrarToast(mensaje, 'error')
@@ -428,27 +415,22 @@ export default function ControlAsistenciaGlobal() {
                       </td>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center justify-center gap-1">
-                          {(m.estado === 'PUNTUAL' || m.estado === 'TARDANZA' || m.estado === 'JUSTIFICADA' || m.estado === 'EN_CURSO') && (
+                          {(m.estado === 'PUNTUAL' || m.estado === 'TARDANZA' || m.estado === 'AUSENTE' || m.estado === 'JUSTIFICADA' || m.estado === 'EN_CURSO') && (
                             <button
                               type="button"
-                              onClick={m.estado === 'TARDANZA' ? () => aplicarAccion(m.id, 'justificar') : undefined}
-                              disabled={m.estado !== 'TARDANZA'}
-                              title={m.estado === 'TARDANZA' ? 'Justificar tardanza' : 'Solo las tardanzas pueden justificarse'}
+                              onClick={m.estado === 'TARDANZA' || m.estado === 'AUSENTE' ? () => aplicarAccion(m.id, 'justificar') : undefined}
+                              disabled={m.estado !== 'TARDANZA' && m.estado !== 'AUSENTE'}
+                              title={
+                                m.estado === 'TARDANZA'
+                                  ? 'Justificar tardanza'
+                                  : m.estado === 'AUSENTE'
+                                    ? 'Justificar falta'
+                                    : 'Solo las tardanzas y faltas pueden justificarse'
+                              }
                               className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-[#148D82] transition-colors hover:bg-[#F1FCF9] disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
                             >
                               <Icon icon="material-symbols:edit-note" className="text-sm" />
                               Justificar
-                            </button>
-                          )}
-                          {m.estado === 'AUSENTE' && (
-                            <button
-                              type="button"
-                              onClick={() => aplicarAccion(m.id, 'falta')}
-                              title="Registrar Falta"
-                              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
-                            >
-                              <Icon icon="material-symbols:warning" className="text-sm" />
-                              Registrar Falta
                             </button>
                           )}
                         </div>
@@ -483,7 +465,9 @@ export default function ControlAsistenciaGlobal() {
           <div className="absolute inset-0 bg-slate-900/40" onClick={() => setModalJustificar(null)} />
           <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
             <div className="mb-4 flex items-start justify-between">
-              <h2 className="text-lg font-bold text-slate-900">Justificar marcación</h2>
+              <h2 className="text-lg font-bold text-slate-900">
+                {modalJustificar?.estado === 'AUSENTE' ? 'Justificar falta' : 'Justificar tardanza'}
+              </h2>
               <button
                 type="button"
                 onClick={() => setModalJustificar(null)}
@@ -502,7 +486,7 @@ export default function ControlAsistenciaGlobal() {
               rows="4"
               value={motivo}
               onChange={(e) => { setMotivo(e.target.value); setErrorJustificacion('') }}
-              placeholder="Describa el motivo de la tardanza o incidencia..."
+              placeholder="Describa el motivo de la tardanza o falta..."
               className={`w-full rounded-lg border px-3 py-2.5 text-sm outline-none transition-shadow placeholder:text-slate-400 ${
                 errorJustificacion
                   ? 'border-red-500 focus:ring-2 focus:ring-red-100'
@@ -587,9 +571,7 @@ export default function ControlAsistenciaGlobal() {
         titulo={confirmacion?.titulo}
         mensaje={confirmacion?.mensaje}
         textoConfirmar={
-          confirmacion?.tipo === 'falta'
-            ? 'Registrar Falta'
-            : confirmacion?.tipo === 'manual'
+          confirmacion?.tipo === 'manual'
               ? 'Registrar'
               : 'Confirmar'
         }
